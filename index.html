@@ -1,0 +1,1661 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AR Neko Camera - Magical Photo Experience</title>
+    <meta name="description" content="AR Neko Camera with magical effects, filters, and interactive animations">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg'><text y='32' font-size='32'>🐱</text></svg>">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --secondary-gradient: linear-gradient(45deg, #ff6b6b, #ee5a24);
+            --success-color: #4CAF50;
+            --error-color: #f44336;
+            --info-color: #2196F3;
+            --glass-bg: rgba(255, 255, 255, 0.1);
+            --glass-border: rgba(255, 255, 255, 0.2);
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: var(--primary-gradient);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        /* Animated Background Particles */
+        .bg-particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            overflow: hidden;
+        }
+
+        .particle {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: white;
+            border-radius: 50%;
+            animation: floatParticle linear infinite;
+            opacity: 0.3;
+        }
+
+        @keyframes floatParticle {
+            0% {
+                transform: translateY(100vh) translateX(0px);
+                opacity: 0;
+            }
+            10% {
+                opacity: 0.3;
+            }
+            90% {
+                opacity: 0.3;
+            }
+            100% {
+                transform: translateY(-100px) translateX(100px);
+                opacity: 0;
+            }
+        }
+
+        .container {
+            text-align: center;
+            padding: 2.5rem;
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            border-radius: 25px;
+            box-shadow: 
+                0 15px 35px rgba(0, 0, 0, 0.2),
+                0 5px 15px rgba(0, 0, 0, 0.1),
+                inset 0 1px 0 rgba(255, 255, 255, 0.1);
+            border: 1px solid var(--glass-border);
+            animation: containerEnter 1s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            max-width: 95vw;
+            position: relative;
+        }
+
+        @keyframes containerEnter {
+            0% {
+                opacity: 0;
+                transform: translateY(100px) scale(0.8);
+            }
+            100% {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        h1 {
+            margin-bottom: 2rem;
+            font-size: 3rem;
+            font-weight: 700;
+            background: linear-gradient(45deg, #fff, #ffd700, #ff6b6b);
+            background-size: 200% 200%;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: rainbowText 3s ease-in-out infinite, bounce 2s ease-in-out infinite;
+            text-shadow: 0 0 30px rgba(255, 255, 255, 0.3);
+        }
+
+        @keyframes rainbowText {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+            40% { transform: translateY(-10px); }
+            60% { transform: translateY(-5px); }
+        }
+
+        .video-container {
+            position: relative;
+            display: inline-block;
+            margin-bottom: 2rem;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 
+                0 20px 40px rgba(0, 0, 0, 0.3),
+                0 0 0 1px rgba(255, 255, 255, 0.1);
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            background: linear-gradient(45deg, #667eea, #764ba2);
+        }
+
+        .video-container:hover {
+            transform: scale(1.02) rotateX(2deg);
+            box-shadow: 
+                0 25px 50px rgba(0, 0, 0, 0.4),
+                0 0 0 1px rgba(255, 255, 255, 0.2);
+        }
+
+        .video-container.recording {
+            animation: recordingPulse 1s ease-in-out infinite;
+        }
+
+        @keyframes recordingPulse {
+            0%, 100% {
+                box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3), 0 0 20px rgba(244, 67, 54, 0.5);
+            }
+            50% {
+                box-shadow: 0 25px 50px rgba(0, 0, 0, 0.4), 0 0 30px rgba(244, 67, 54, 0.8);
+            }
+        }
+
+        #video {
+            display: block;
+            width: 640px;
+            max-width: 90vw;
+            height: auto;
+            border-radius: 20px;
+            transition: all 0.5s ease;
+        }
+
+        /* Enhanced Filter Effects */
+        .filter-none { filter: none; }
+        .filter-sepia { filter: sepia(100%) contrast(1.1); }
+        .filter-grayscale { filter: grayscale(100%) contrast(1.2); }
+        .filter-vintage { filter: sepia(50%) contrast(1.2) brightness(0.9) hue-rotate(10deg); }
+        .filter-neon { filter: contrast(150%) brightness(1.2) saturate(200%) hue-rotate(90deg); }
+        .filter-blur { filter: blur(2px) brightness(1.1); }
+        .filter-cyberpunk { filter: contrast(120%) brightness(1.1) saturate(150%) hue-rotate(200deg); }
+        .filter-warm { filter: sepia(30%) saturate(130%) hue-rotate(350deg); }
+
+        .video-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            opacity: 1;
+            transition: all 0.5s ease;
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+        }
+
+        .video-overlay.hidden {
+            opacity: 0;
+            pointer-events: none;
+            transform: scale(0.8);
+        }
+
+        .video-overlay-text {
+            text-align: center;
+            animation: fadeInUp 0.8s ease-out;
+        }
+
+        @keyframes fadeInUp {
+            0% {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            100% {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Effect Animations */
+        .snow-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            overflow: hidden;
+            border-radius: 20px;
+        }
+
+        .snowflake {
+            position: absolute;
+            color: white;
+            user-select: none;
+            pointer-events: none;
+            font-size: 20px;
+            animation: fall linear infinite;
+        }
+
+        .heart {
+            position: absolute;
+            color: #ff69b4;
+            user-select: none;
+            pointer-events: none;
+            font-size: 25px;
+            animation: float linear infinite;
+        }
+
+        .star {
+            position: absolute;
+            color: #ffd700;
+            user-select: none;
+            pointer-events: none;
+            font-size: 15px;
+            animation: twinkle linear infinite;
+        }
+
+        .confetti {
+            position: absolute;
+            user-select: none;
+            pointer-events: none;
+            font-size: 20px;
+            animation: confettiFall linear infinite;
+        }
+
+        @keyframes fall {
+            0% {
+                transform: translateY(-100vh) rotate(0deg);
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(100vh) rotate(360deg);
+                opacity: 0;
+            }
+        }
+
+        @keyframes float {
+            0% {
+                transform: translateY(100vh) scale(0) rotate(0deg);
+                opacity: 1;
+            }
+            50% {
+                transform: translateY(50vh) scale(1) rotate(180deg);
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(-100vh) scale(0) rotate(360deg);
+                opacity: 0;
+            }
+        }
+
+        @keyframes twinkle {
+            0%, 100% {
+                opacity: 0;
+                transform: scale(0) rotate(0deg);
+            }
+            50% {
+                opacity: 1;
+                transform: scale(1) rotate(180deg);
+            }
+        }
+
+        @keyframes confettiFall {
+            0% {
+                transform: translateY(-100vh) rotate(0deg);
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(100vh) rotate(720deg);
+                opacity: 0;
+            }
+        }
+
+        /* Screenshot Flash with Rainbow Effect */
+        .flash {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(45deg, #ff6b6b, #ffd700, #4ecdc4, #45b7d1);
+            background-size: 400% 400%;
+            opacity: 0;
+            border-radius: 20px;
+            pointer-events: none;
+            z-index: 1000;
+        }
+
+        .flash.active {
+            animation: rainbowFlash 0.4s ease-out;
+        }
+
+        @keyframes rainbowFlash {
+            0% { 
+                opacity: 0; 
+                background-position: 0% 50%;
+            }
+            50% { 
+                opacity: 0.9; 
+                background-position: 100% 50%;
+            }
+            100% { 
+                opacity: 0; 
+                background-position: 200% 50%;
+            }
+        }
+
+        /* Control Sections */
+        .controls, .filter-controls, .effects-controls {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-bottom: 1.5rem;
+        }
+
+        .section-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: #ffd700;
+            text-shadow: 0 0 10px rgba(255, 215, 0, 0.3);
+        }
+
+        /* Enhanced Button Styles */
+        button {
+            padding: 12px 24px;
+            font-size: 1rem;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            position: relative;
+            overflow: hidden;
+            backdrop-filter: blur(10px);
+        }
+
+        button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s;
+        }
+
+        button:hover::before {
+            left: 100%;
+        }
+
+        .start-btn {
+            background: linear-gradient(45deg, #4CAF50, #45a049);
+            color: white;
+            box-shadow: 0 4px 15px rgba(76, 175, 80, 0.4);
+        }
+
+        .start-btn:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 0 8px 25px rgba(76, 175, 80, 0.6);
+        }
+
+        .stop-btn {
+            background: linear-gradient(45deg, #f44336, #da190b);
+            color: white;
+            box-shadow: 0 4px 15px rgba(244, 67, 54, 0.4);
+        }
+
+        .stop-btn:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 0 8px 25px rgba(244, 67, 54, 0.6);
+        }
+
+        .screenshot-btn {
+            background: linear-gradient(45deg, #2196F3, #1976D2);
+            color: white;
+            box-shadow: 0 4px 15px rgba(33, 150, 243, 0.4);
+            position: relative;
+        }
+
+        .screenshot-btn:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 0 8px 25px rgba(33, 150, 243, 0.6);
+        }
+
+        .screenshot-btn.capturing {
+            animation: captureAnimation 0.3s ease-out;
+        }
+
+        @keyframes captureAnimation {
+            0% { transform: scale(1); }
+            50% { transform: scale(0.95); }
+            100% { transform: scale(1); }
+        }
+
+        .effect-btn, .filter-btn {
+            background: linear-gradient(45deg, #FF9800, #F57C00);
+            color: white;
+            box-shadow: 0 4px 15px rgba(255, 152, 0, 0.4);
+            font-size: 0.9rem;
+            padding: 10px 18px;
+        }
+
+        .effect-btn:hover, .filter-btn:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 0 8px 25px rgba(255, 152, 0, 0.6);
+        }
+
+        .effect-btn.active, .filter-btn.active {
+            background: linear-gradient(45deg, #4CAF50, #45a049);
+            box-shadow: 0 4px 15px rgba(76, 175, 80, 0.4);
+            animation: activeButton 2s ease-in-out infinite;
+        }
+
+        @keyframes activeButton {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.02); }
+        }
+
+        button:disabled {
+            background: #666;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+            opacity: 0.6;
+        }
+
+        /* Enhanced Loading Animation */
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s linear infinite;
+            margin-right: 10px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Status Messages with Icons */
+        .status {
+            margin-top: 1rem;
+            padding: 15px 25px;
+            border-radius: 30px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+            animation: statusSlideIn 0.5s ease-out;
+            position: relative;
+            overflow: hidden;
+        }
+
+        @keyframes statusSlideIn {
+            0% {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            100% {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .status::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+            animation: statusShine 2s infinite;
+        }
+
+        @keyframes statusShine {
+            0% { left: -100%; }
+            100% { left: 100%; }
+        }
+
+        .status.success {
+            background: linear-gradient(45deg, rgba(76, 175, 80, 0.2), rgba(76, 175, 80, 0.1));
+            border: 2px solid #4CAF50;
+            color: #4CAF50;
+            box-shadow: 0 0 20px rgba(76, 175, 80, 0.3);
+        }
+
+        .status.error {
+            background: linear-gradient(45deg, rgba(244, 67, 54, 0.2), rgba(244, 67, 54, 0.1));
+            border: 2px solid #f44336;
+            color: #f44336;
+            box-shadow: 0 0 20px rgba(244, 67, 54, 0.3);
+        }
+
+        .status.info {
+            background: linear-gradient(45deg, rgba(33, 150, 243, 0.2), rgba(33, 150, 243, 0.1));
+            border: 2px solid #2196F3;
+            color: #2196F3;
+            box-shadow: 0 0 20px rgba(33, 150, 243, 0.3);
+        }
+
+        /* Screenshot Preview with Hover Effects */
+        .screenshot-preview {
+            margin-top: 1.5rem;
+            padding: 1.5rem;
+            background: var(--glass-bg);
+            backdrop-filter: blur(15px);
+            border-radius: 20px;
+            display: none;
+            animation: slideInUp 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            border: 1px solid var(--glass-border);
+        }
+
+        @keyframes slideInUp {
+            0% {
+                opacity: 0;
+                transform: translateY(50px);
+            }
+            100% {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .screenshot-preview img {
+            max-width: 250px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            transition: transform 0.3s ease;
+        }
+
+        .screenshot-preview img:hover {
+            transform: scale(1.05);
+        }
+
+        .download-link {
+            display: inline-block;
+            margin-top: 1rem;
+            padding: 10px 20px;
+            background: linear-gradient(45deg, #4CAF50, #45a049);
+            color: white;
+            text-decoration: none;
+            border-radius: 25px;
+            transition: all 0.3s ease;
+            font-weight: 600;
+        }
+
+        .download-link:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(76, 175, 80, 0.4);
+        }
+
+        /* Shortcuts Info with Animation */
+        .shortcuts-info {
+            margin-top: 1.5rem;
+            padding: 1.5rem;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 20px;
+            font-size: 0.9rem;
+            opacity: 0.9;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            animation: fadeIn 1s ease-out 0.5s both;
+        }
+
+        @keyframes fadeIn {
+            0% { opacity: 0; }
+            100% { opacity: 0.9; }
+        }
+
+        .shortcuts-info code {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            font-weight: bold;
+        }
+
+        /* Footer with Floating Animation */
+        .footer {
+            margin-top: 2rem;
+            text-align: center;
+            opacity: 0.8;
+            font-size: 0.9rem;
+            animation: float 3s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-5px); }
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .container {
+                margin: 1rem;
+                padding: 1.5rem;
+            }
+            
+            h1 {
+                font-size: 2.2rem;
+            }
+            
+            .controls, .effects-controls, .filter-controls {
+                flex-direction: column;
+                align-items: center;
+                gap: 0.8rem;
+            }
+
+            button {
+                font-size: 0.9rem;
+                padding: 10px 20px;
+                width: 200px;
+            }
+
+            .screenshot-preview img {
+                max-width: 200px;
+            }
+        }
+
+        /* Hidden Canvas */
+        #screenshotCanvas {
+            position: absolute;
+            top: -9999px;
+            left: -9999px;
+        }
+
+        /* Counter Animation */
+        .photo-counter {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 0.8rem;
+            font-weight: bold;
+            backdrop-filter: blur(10px);
+        }
+
+        /* Pulse Effect for Recording */
+        .pulse {
+            animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: .5;
+            }
+        }
+
+        /* Enhanced Responsive Design */
+@media (max-width: 1200px) {
+    .container {
+        max-width: 90vw;
+        padding: 2rem;
+    }
+    
+    h1 {
+        font-size: 2.8rem;
+    }
+    
+    #video {
+        width: 90vw;
+        max-width: 600px;
+    }
+}
+
+@media (max-width: 992px) {
+    .container {
+        padding: 1.8rem;
+    }
+    
+    h1 {
+        font-size: 2.5rem;
+        margin-bottom: 1.5rem;
+    }
+    
+    .controls, .filter-controls, .effects-controls {
+        gap: 0.8rem;
+    }
+    
+    button {
+        font-size: 0.95rem;
+        padding: 11px 22px;
+    }
+    
+    .effect-btn, .filter-btn {
+        padding: 9px 16px;
+        font-size: 0.85rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .container {
+        margin: 0.5rem;
+        padding: 1.5rem;
+        border-radius: 20px;
+    }
+    
+    h1 {
+        font-size: 2.2rem;
+        margin-bottom: 1.5rem;
+    }
+    
+    .video-container {
+        margin-bottom: 1.5rem;
+        border-radius: 15px;
+    }
+    
+    #video {
+        border-radius: 15px;
+    }
+    
+    .video-overlay {
+        border-radius: 15px;
+        font-size: 1.2rem;
+        padding: 1rem;
+    }
+    
+    .video-overlay-text {
+        text-align: center;
+    }
+    
+    .video-overlay-text > div:first-child {
+        font-size: 1.5rem !important;
+        margin-bottom: 0.8rem !important;
+    }
+    
+    .video-overlay-text > div:last-child {
+        font-size: 0.8rem !important;
+        margin-top: 0.8rem !important;
+    }
+    
+    .controls, .effects-controls, .filter-controls {
+        flex-direction: column;
+        align-items: center;
+        gap: 0.8rem;
+        margin-bottom: 1.2rem;
+    }
+
+    button {
+        font-size: 0.9rem;
+        padding: 12px 24px;
+        width: 100%;
+        max-width: 280px;
+        min-height: 44px; /* Touch-friendly */
+    }
+    
+    .effect-btn, .filter-btn {
+        padding: 10px 20px;
+        font-size: 0.8rem;
+        width: 100%;
+        max-width: 200px;
+    }
+
+    .screenshot-preview {
+        padding: 1rem;
+        margin-top: 1rem;
+    }
+    
+    .screenshot-preview img {
+        max-width: 90%;
+        width: 100%;
+        height: auto;
+    }
+    
+    .section-title {
+        font-size: 1.1rem;
+        margin-bottom: 0.8rem;
+    }
+    
+    .shortcuts-info {
+        padding: 1rem;
+        font-size: 0.8rem;
+    }
+    
+    .shortcuts-info code {
+        padding: 1px 4px;
+        font-size: 0.75rem;
+    }
+    
+    .footer {
+        font-size: 0.8rem;
+        margin-top: 1.5rem;
+    }
+    
+    .status {
+        padding: 12px 20px;
+        font-size: 0.9rem;
+        border-radius: 25px;
+    }
+}
+
+@media (max-width: 576px) {
+    .container {
+        margin: 0.25rem;
+        padding: 1.2rem;
+        border-radius: 15px;
+    }
+    
+    h1 {
+        font-size: 1.8rem;
+        margin-bottom: 1.2rem;
+    }
+    
+    .video-container {
+        margin-bottom: 1.2rem;
+    }
+    
+    #video {
+        width: 95vw;
+        max-width: none;
+    }
+    
+    .video-overlay {
+        font-size: 1rem;
+        padding: 0.8rem;
+    }
+    
+    button {
+        font-size: 0.85rem;
+        padding: 10px 20px;
+        max-width: 100%;
+        letter-spacing: 0.5px;
+    }
+    
+    .effect-btn, .filter-btn {
+        font-size: 0.75rem;
+        padding: 8px 16px;
+    }
+    
+    .controls, .effects-controls, .filter-controls {
+        gap: 0.6rem;
+        margin-bottom: 1rem;
+    }
+    
+    .section-title {
+        font-size: 1rem;
+        margin-bottom: 0.6rem;
+    }
+    
+    .shortcuts-info {
+        padding: 0.8rem;
+        font-size: 0.75rem;
+        line-height: 1.4;
+    }
+    
+    .screenshot-preview {
+        padding: 0.8rem;
+    }
+    
+    .download-link {
+        padding: 8px 16px;
+        font-size: 0.8rem;
+        margin-top: 0.8rem;
+    }
+    
+    .photo-counter {
+        top: 8px;
+        right: 8px;
+        padding: 4px 8px;
+        font-size: 0.7rem;
+        border-radius: 12px;
+    }
+}
+
+@media (max-width: 480px) {
+    .container {
+        margin: 0.1rem;
+        padding: 1rem;
+        border-radius: 12px;
+    }
+    
+    h1 {
+        font-size: 1.6rem;
+        margin-bottom: 1rem;
+    }
+    
+    .video-container {
+        margin-bottom: 1rem;
+        border-radius: 12px;
+    }
+    
+    #video {
+        border-radius: 12px;
+    }
+    
+    .video-overlay {
+        border-radius: 12px;
+        font-size: 0.9rem;
+        padding: 0.6rem;
+    }
+    
+    button {
+        font-size: 0.8rem;
+        padding: 9px 18px;
+        border-radius: 25px;
+    }
+    
+    .effect-btn, .filter-btn {
+        font-size: 0.7rem;
+        padding: 7px 14px;
+    }
+    
+    .section-title {
+        font-size: 0.9rem;
+        margin-bottom: 0.5rem;
+    }
+    
+    .shortcuts-info {
+        padding: 0.6rem;
+        font-size: 0.7rem;
+        border-radius: 15px;
+    }
+    
+    .footer {
+        font-size: 0.7rem;
+        margin-top: 1rem;
+    }
+    
+    .status {
+        padding: 10px 16px;
+        font-size: 0.8rem;
+        border-radius: 20px;
+    }
+}
+
+/* Landscape Mobile Orientation */
+@media (max-width: 812px) and (orientation: landscape) {
+    .container {
+        padding: 1rem;
+        max-height: 95vh;
+        overflow-y: auto;
+    }
+    
+    h1 {
+        font-size: 1.8rem;
+        margin-bottom: 0.8rem;
+    }
+    
+    .video-container {
+        margin-bottom: 1rem;
+    }
+    
+    #video {
+        max-height: 40vh;
+        width: auto;
+    }
+    
+    .controls, .filter-controls, .effects-controls {
+        flex-direction: row;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 0.5rem;
+        margin-bottom: 0.8rem;
+    }
+    
+    button {
+        flex: 0 0 auto;
+        min-width: 120px;
+        max-width: 140px;
+        font-size: 0.75rem;
+        padding: 8px 12px;
+    }
+    
+    .shortcuts-info {
+        padding: 0.8rem;
+        font-size: 0.7rem;
+    }
+}
+
+/* Ultra-wide screens */
+@media (min-width: 1600px) {
+    .container {
+        max-width: 1200px;
+        padding: 3rem;
+    }
+    
+    h1 {
+        font-size: 3.5rem;
+    }
+    
+    #video {
+        width: 800px;
+        max-width: none;
+    }
+    
+    button {
+        font-size: 1.1rem;
+        padding: 14px 28px;
+    }
+    
+    .effect-btn, .filter-btn {
+        font-size: 1rem;
+        padding: 12px 24px;
+    }
+}
+
+/* High DPI / Retina displays */
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+    .container {
+        backdrop-filter: blur(15px);
+    }
+    
+    button::before {
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.15), transparent);
+    }
+}
+
+/* Touch device optimizations */
+@media (hover: none) and (pointer: coarse) {
+    button {
+        min-height: 44px;
+        font-size: 0.9rem;
+    }
+    
+    .effect-btn, .filter-btn {
+        min-height: 40px;
+    }
+    
+    button:hover {
+        transform: none;
+    }
+    
+    button:active {
+        transform: scale(0.98);
+        transition: transform 0.1s ease;
+    }
+    
+    .video-container:hover {
+        transform: none;
+    }
+}
+
+/* Reduce motion for accessibility */
+@media (prefers-reduced-motion: reduce) {
+    * {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+    
+    .particle {
+        display: none;
+    }
+    
+    .bg-particles {
+        display: none;
+    }
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+    :root {
+        --glass-bg: rgba(0, 0, 0, 0.2);
+        --glass-border: rgba(255, 255, 255, 0.1);
+    }
+}
+
+/* Print styles */
+@media print {
+    .bg-particles,
+    .snow-container,
+    .flash,
+    .controls,
+    .filter-controls,
+    .effects-controls,
+    .shortcuts-info {
+        display: none !important;
+    }
+    
+    .container {
+        box-shadow: none;
+        background: white;
+        color: black;
+    }
+}
+    </style>
+</head>
+<body>
+    <!-- Animated Background Particles -->
+    <div class="bg-particles" id="bgParticles"></div>
+
+    <div class="container">
+        <h1>🐱 AR Neko Camera</h1>
+        
+        <div class="video-container" id="videoContainer">
+            <video id="video" width="640" height="480" autoplay playsinline></video>
+            <div class="video-overlay" id="videoOverlay">
+                <div class="video-overlay-text">
+                    <div style="font-size: 2rem; margin-bottom: 1rem;">🎉</div>
+                    <div>Click "Start Camera" to begin your magical journey!</div>
+                    <div style="font-size: 0.9rem; margin-top: 1rem; opacity: 0.8;">
+                        ✨ Powered by cutting-edge web technology
+                    </div>
+                </div>
+            </div>
+            <div class="snow-container" id="effectContainer"></div>
+            <div class="flash" id="flash"></div>
+            <div class="photo-counter" id="photoCounter" style="display: none;">📸 0</div>
+        </div>
+
+        <div class="controls">
+            <button class="start-btn" onclick="startCamera()" id="startBtn">
+                <span id="startBtnText">🚀 Start Camera</span>
+            </button>
+            <button class="stop-btn" onclick="stopCamera()" id="stopBtn" disabled>
+                ⏹️ Stop Camera
+            </button>
+            <button class="screenshot-btn" onclick="takeScreenshot()" id="screenshotBtn" disabled>
+                📸 Capture Magic
+            </button>
+        </div>
+
+        <div class="section-title">🎨 Filters</div>
+        <div class="filter-controls">
+            <button class="filter-btn active" onclick="applyFilter('none')" data-filter="none">✨ Original</button>
+            <button class="filter-btn" onclick="applyFilter('sepia')" data-filter="sepia">🟤 Sepia</button>
+            <button class="filter-btn" onclick="applyFilter('grayscale')" data-filter="grayscale">⚫ B&W</button>
+            <button class="filter-btn" onclick="applyFilter('vintage')" data-filter="vintage">📷 Vintage</button>
+            <button class="filter-btn" onclick="applyFilter('neon')" data-filter="neon">🌈 Neon</button>
+            <button class="filter-btn" onclick="applyFilter('cyberpunk')" data-filter="cyberpunk">🤖 Cyber</button>
+            <button class="filter-btn" onclick="applyFilter('warm')" data-filter="warm">🔥 Warm</button>
+            <button class="filter-btn" onclick="applyFilter('blur')" data-filter="blur">🌫️ Blur</button>
+        </div>
+
+        <div class="section-title">✨ Magic Effects</div>
+        <div class="effects-controls">
+            <button class="effect-btn" onclick="toggleEffect('snow')" id="snowBtn" disabled>
+                ❄️ Snow
+            </button>
+            <button class="effect-btn" onclick="toggleEffect('hearts')" id="heartsBtn" disabled>
+                💖 Hearts
+            </button>
+            <button class="effect-btn" onclick="toggleEffect('stars')" id="starsBtn" disabled>
+                ⭐ Stars
+            </button>
+            <button class="effect-btn" onclick="toggleEffect('confetti')" id="confettiBtn" disabled>
+                🎉 Confetti
+            </button>
+        </div>
+
+        <div id="status" class="status" style="display: none;"></div>
+        
+        <div class="screenshot-preview" id="screenshotPreview">
+            <p style="margin-bottom: 1rem; font-weight: 600;">📸 Latest Masterpiece:</p>
+            <img id="screenshotImg" alt="Screenshot">
+            <br>
+            <a href="#" id="downloadLink" class="download-link">
+                💾 Download Your Creation
+            </a>
+        </div>
+
+        <div class="shortcuts-info">
+            <strong>⌨️ Magic Shortcuts:</strong><br>
+            <code>SPACE</code> - Capture Magic | <code>S</code> - Snow | <code>H</code> - Hearts | <code>T</code> - Stars | <code>C</code> - Confetti
+            <br><strong>🎨 Quick Filters:</strong> <code>1-8</code> Numbers
+        </div>
+
+        <div class="footer">
+            <p>Made with ❤️ by Mahdi Ali | AR Neko Camera v3.0</p>
+            <p style="font-size: 0.8rem; margin-top: 0.5rem;">🌟 Create memories that sparkle</p>
+        </div>
+    </div>
+
+    <canvas id="screenshotCanvas" style="display: none;"></canvas>
+
+    <script>
+        let currentStream = null;
+        let cameraActive = false;
+        let activeEffects = {
+            snow: false,
+            hearts: false,
+            stars: false,
+            confetti: false
+        };
+        let effectIntervals = {};
+        let currentFilter = 'none';
+        let photoCount = 0;
+
+        // Create background particles
+        function createBackgroundParticles() {
+            const particlesContainer = document.getElementById('bgParticles');
+            
+            setInterval(() => {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                particle.style.left = Math.random() * 100 + 'vw';
+                particle.style.animationDuration = Math.random() * 10 + 10 + 's';
+                particle.style.animationDelay = Math.random() * 2 + 's';
+                
+                particlesContainer.appendChild(particle);
+                
+                setTimeout(() => {
+                    if (particle.parentNode) {
+                        particle.parentNode.removeChild(particle);
+                    }
+                }, 15000);
+            }, 2000);
+        }
+
+        async function startCamera() {
+            const startBtn = document.getElementById('startBtn');
+            const stopBtn = document.getElementById('stopBtn');
+            const screenshotBtn = document.getElementById('screenshotBtn');
+            const effectBtns = document.querySelectorAll('.effect-btn');
+            const filterBtns = document.querySelectorAll('.filter-btn');
+            const startBtnText = document.getElementById('startBtnText');
+            const videoOverlay = document.getElementById('videoOverlay');
+            const videoContainer = document.getElementById('videoContainer');
+            const photoCounter = document.getElementById('photoCounter');
+
+            startBtnText.innerHTML = '<span class="loading"></span>🎬 Starting Magic...';
+            startBtn.disabled = true;
+            showStatus('🎥 Requesting camera access... Please allow permissions!', 'info');
+
+            try {
+                currentStream = await navigator.mediaDevices.getUserMedia({ 
+                    video: { 
+                        width: { ideal: 1280 },
+                        height: { ideal: 720 },
+                        facingMode: 'user'
+                    }, 
+                    audio: false 
+                });
+                
+                const videoElement = document.getElementById('video');
+                videoElement.srcObject = currentStream;
+                
+                videoOverlay.classList.add('hidden');
+                videoContainer.classList.add('recording');
+                cameraActive = true;
+                
+                startBtn.style.display = 'none';
+                stopBtn.disabled = false;
+                screenshotBtn.disabled = false;
+                effectBtns.forEach(btn => btn.disabled = false);
+                filterBtns.forEach(btn => btn.disabled = false);
+                stopBtn.classList.add('pulse');
+                photoCounter.style.display = 'block';
+                
+                showStatus('🎉 Camera is now active! Let the magic begin!', 'success');
+                
+                // Celebration effect
+                setTimeout(() => {
+                    createCelebrationBurst();
+                }, 500);
+                
+            } catch (error) {
+                console.error('Error accessing camera:', error);
+                startBtnText.textContent = '🚀 Start Camera';
+                startBtn.disabled = false;
+                
+                let errorMessage = 'Could not access camera';
+                if (error.name === 'NotAllowedError') {
+                    errorMessage = '🚫 Camera access denied. Please allow permissions and refresh the page!';
+                } else if (error.name === 'NotFoundError') {
+                    errorMessage = '📷 No camera found. Please connect a camera device!';
+                } else if (error.name === 'NotReadableError') {
+                    errorMessage = '📱 Camera is busy. Please close other camera apps and try again!';
+                }
+                
+                showStatus(errorMessage, 'error');
+            }
+        }
+
+        function stopCamera() {
+            const startBtn = document.getElementById('startBtn');
+            const stopBtn = document.getElementById('stopBtn');
+            const screenshotBtn = document.getElementById('screenshotBtn');
+            const effectBtns = document.querySelectorAll('.effect-btn');
+            const filterBtns = document.querySelectorAll('.filter-btn');
+            const videoOverlay = document.getElementById('videoOverlay');
+            const videoContainer = document.getElementById('videoContainer');
+            const photoCounter = document.getElementById('photoCounter');
+            
+            if (currentStream) {
+                currentStream.getTracks().forEach(track => track.stop());
+                currentStream = null;
+                cameraActive = false;
+                
+                // Stop all effects
+                Object.keys(activeEffects).forEach(effect => {
+                    if (activeEffects[effect]) {
+                        toggleEffect(effect);
+                    }
+                });
+                
+                videoOverlay.classList.remove('hidden');
+                videoContainer.classList.remove('recording');
+                videoOverlay.innerHTML = `
+                    <div class="video-overlay-text">
+                        <div style="font-size: 2rem; margin-bottom: 1rem;">😴</div>
+                        <div>Camera stopped. Ready for another magical session?</div>
+                        <div style="font-size: 0.9rem; margin-top: 1rem; opacity: 0.8;">
+                            📸 Photos captured this session: ${photoCount}
+                        </div>
+                    </div>
+                `;
+                
+                startBtn.style.display = 'inline-block';
+                startBtn.disabled = false;
+                document.getElementById('startBtnText').textContent = '🚀 Start Camera';
+                stopBtn.disabled = true;
+                screenshotBtn.disabled = true;
+                effectBtns.forEach(btn => btn.disabled = true);
+                filterBtns.forEach(btn => btn.disabled = true);
+                stopBtn.classList.remove('pulse');
+                photoCounter.style.display = 'none';
+                
+                showStatus('⏹️ Camera stopped. Thanks for the magical session!', 'info');
+            }
+        }
+
+        function takeScreenshot() {
+            const video = document.getElementById('video');
+            const canvas = document.getElementById('screenshotCanvas');
+            const flash = document.getElementById('flash');
+            const screenshotBtn = document.getElementById('screenshotBtn');
+            const photoCounter = document.getElementById('photoCounter');
+            
+            if (!cameraActive) return;
+            
+            // Add capture animation
+            screenshotBtn.classList.add('capturing');
+            setTimeout(() => screenshotBtn.classList.remove('capturing'), 300);
+            
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            
+            const ctx = canvas.getContext('2d');
+            ctx.filter = getFilterCSS(currentFilter);
+            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+            
+            flash.classList.add('active');
+            setTimeout(() => flash.classList.remove('active'), 400);
+            
+            canvas.toBlob((blob) => {
+                const url = URL.createObjectURL(blob);
+                const img = document.getElementById('screenshotImg');
+                const downloadLink = document.getElementById('downloadLink');
+                const preview = document.getElementById('screenshotPreview');
+                
+                img.src = url;
+                downloadLink.href = url;
+                downloadLink.download = `neko-magic-${Date.now()}.png`;
+                preview.style.display = 'block';
+                
+                photoCount++;
+                photoCounter.textContent = `📸 ${photoCount}`;
+                
+                showStatus('📸 ✨ Magical moment captured! Your masterpiece is ready!', 'success');
+                
+                // Create mini celebration
+                createMiniCelebration();
+            }, 'image/png');
+        }
+
+        function applyFilter(filterName) {
+            const video = document.getElementById('video');
+            const filterBtns = document.querySelectorAll('.filter-btn');
+            
+            if (!cameraActive) return;
+            
+            currentFilter = filterName;
+            video.className = `filter-${filterName}`;
+            
+            filterBtns.forEach(btn => {
+                btn.classList.remove('active');
+                if (btn.dataset.filter === filterName) {
+                    btn.classList.add('active');
+                }
+            });
+            
+            const filterNames = {
+                'none': 'Original',
+                'sepia': 'Sepia Dream',
+                'grayscale': 'Noir Classic',
+                'vintage': 'Vintage Vibes',
+                'neon': 'Neon Nights',
+                'cyberpunk': 'Cyber Future',
+                'warm': 'Warm Glow',
+                'blur': 'Dreamy Blur'
+            };
+            
+            showStatus(`🎨 ${filterNames[filterName]} filter applied!`, 'info');
+        }
+
+        function getFilterCSS(filterName) {
+            const filters = {
+                'none': 'none',
+                'sepia': 'sepia(100%) contrast(1.1)',
+                'grayscale': 'grayscale(100%) contrast(1.2)',
+                'vintage': 'sepia(50%) contrast(1.2) brightness(0.9) hue-rotate(10deg)',
+                'neon': 'contrast(150%) brightness(1.2) saturate(200%) hue-rotate(90deg)',
+                'blur': 'blur(2px) brightness(1.1)',
+                'cyberpunk': 'contrast(120%) brightness(1.1) saturate(150%) hue-rotate(200deg)',
+                'warm': 'sepia(30%) saturate(130%) hue-rotate(350deg)'
+            };
+            return filters[filterName] || 'none';
+        }
+
+        function toggleEffect(effectType) {
+            const btn = document.getElementById(`${effectType}Btn`);
+            const container = document.getElementById('effectContainer');
+            
+            if (!cameraActive) return;
+            
+            if (!activeEffects[effectType]) {
+                activeEffects[effectType] = true;
+                btn.classList.add('active');
+                
+                const effectNames = {
+                    snow: '❄️ Snow',
+                    hearts: '💖 Hearts',
+                    stars: '⭐ Stars',
+                    confetti: '🎉 Confetti'
+                };
+                
+                btn.textContent = `Stop ${effectNames[effectType].split(' ')[1]}`;
+                
+                const intervals = {
+                    snow: 200,
+                    hearts: 400,
+                    stars: 300,
+                    confetti: 250
+                };
+                
+                effectIntervals[effectType] = setInterval(() => createEffect(effectType), intervals[effectType]);
+                showStatus(`✨ ${effectNames[effectType]} effect activated!`, 'info');
+            } else {
+                activeEffects[effectType] = false;
+                btn.classList.remove('active');
+                
+                const effectNames = {
+                    snow: '❄️ Snow',
+                    hearts: '💖 Hearts',
+                    stars: '⭐ Stars',
+                    confetti: '🎉 Confetti'
+                };
+                
+                btn.textContent = effectNames[effectType];
+                
+                clearInterval(effectIntervals[effectType]);
+                
+                const elements = container.querySelectorAll(`.${effectType}`);
+                elements.forEach(el => el.remove());
+                
+                showStatus(`🛑 ${effectNames[effectType]} effect stopped`, 'info');
+            }
+        }
+
+        function createEffect(effectType) {
+            const container = document.getElementById('effectContainer');
+            const element = document.createElement('div');
+            
+            const effects = {
+                snow: { class: 'snowflake', content: ['❄', '❅', '❆'], animation: 'fall' },
+                hearts: { class: 'heart', content: ['💖', '💕', '💓', '💗'], animation: 'float' },
+                stars: { class: 'star', content: ['⭐', '✨', '🌟', '💫'], animation: 'twinkle' },
+                confetti: { class: 'confetti', content: ['🎉', '🎊', '✨', '🌈'], animation: 'confettiFall' }
+            };
+            
+            const effect = effects[effectType];
+            const randomContent = effect.content[Math.floor(Math.random() * effect.content.length)];
+            
+            element.className = `${effect.class} ${effectType}`;
+            element.innerHTML = randomContent;
+            element.style.left = Math.random() * 100 + '%';
+            element.style.animationDuration = Math.random() * 3 + 2 + 's';
+            element.style.opacity = Math.random() * 0.8 + 0.2;
+            element.style.fontSize = Math.random() * 15 + 15 + 'px';
+            
+            container.appendChild(element);
+            
+            setTimeout(() => {
+                if (element.parentNode) {
+                    element.parentNode.removeChild(element);
+                }
+            }, 6000);
+        }
+
+        function createCelebrationBurst() {
+            const container = document.getElementById('effectContainer');
+            const effects = ['🎉', '✨', '🌟', '💫', '🎊'];
+            
+            for (let i = 0; i < 15; i++) {
+                setTimeout(() => {
+                    const element = document.createElement('div');
+                    element.className = 'confetti celebration';
+                    element.innerHTML = effects[Math.floor(Math.random() * effects.length)];
+                    element.style.left = Math.random() * 100 + '%';
+                    element.style.animationDuration = Math.random() * 2 + 1 + 's';
+                    element.style.fontSize = Math.random() * 10 + 20 + 'px';
+                    container.appendChild(element);
+                    
+                    setTimeout(() => {
+                        if (element.parentNode) {
+                            element.parentNode.removeChild(element);
+                        }
+                    }, 3000);
+                }, i * 100);
+            }
+        }
+
+        function createMiniCelebration() {
+            const container = document.getElementById('effectContainer');
+            const effects = ['✨', '🌟', '💫'];
+            
+            for (let i = 0; i < 5; i++) {
+                setTimeout(() => {
+                    const element = document.createElement('div');
+                    element.className = 'star celebration';
+                    element.innerHTML = effects[Math.floor(Math.random() * effects.length)];
+                    element.style.left = Math.random() * 100 + '%';
+                    element.style.animationDuration = '1s';
+                    element.style.fontSize = '25px';
+                    container.appendChild(element);
+                    
+                    setTimeout(() => {
+                        if (element.parentNode) {
+                            element.parentNode.removeChild(element);
+                        }
+                    }, 1000);
+                }, i * 50);
+            }
+        }
+
+        function showStatus(message, type) {
+            const status = document.getElementById('status');
+            status.textContent = message;
+            status.className = `status ${type}`;
+            status.style.display = 'block';
+            
+            if (type !== 'error') {
+                setTimeout(() => {
+                    status.style.display = 'none';
+                }, 4000);
+            }
+        }
+
+        // Enhanced keyboard shortcuts
+        document.addEventListener('keydown', (e) => {
+            if (!cameraActive) return;
+            
+            switch(e.code) {
+                case 'Space':
+                    e.preventDefault();
+                    takeScreenshot();
+                    break;
+                case 'KeyS':
+                    e.preventDefault();
+                    toggleEffect('snow');
+                    break;
+                case 'KeyH':
+                    e.preventDefault();
+                    toggleEffect('hearts');
+                    break;
+                case 'KeyT':
+                    e.preventDefault();
+                    toggleEffect('stars');
+                    break;
+                case 'KeyC':
+                    e.preventDefault();
+                    toggleEffect('confetti');
+                    break;
+                case 'Digit1': applyFilter('none'); break;
+                case 'Digit2': applyFilter('sepia'); break;
+                case 'Digit3': applyFilter('grayscale'); break;
+                case 'Digit4': applyFilter('vintage'); break;
+                case 'Digit5': applyFilter('neon'); break;
+                case 'Digit6': applyFilter('cyberpunk'); break;
+                case 'Digit7': applyFilter('warm'); break;
+                case 'Digit8': applyFilter('blur'); break;
+            }
+        });
+
+        // Initialize app
+        window.addEventListener('load', () => {
+            createBackgroundParticles();
+            showStatus('🎉 Welcome to AR Neko Camera v3.0! Ready to create magic?', 'info');
+            
+            // Preload celebration
+            setTimeout(() => {
+                const container = document.getElementById('effectContainer');
+                for (let i = 0; i < 3; i++) {
+                    setTimeout(() => {
+                        const element = document.createElement('div');
+                        element.className = 'star welcome';
+                        element.innerHTML = '✨';
+                        element.style.left = Math.random() * 100 + '%';
+                        element.style.animationDuration = '2s';
+                        element.style.fontSize = '20px';
+                        container.appendChild(element);
+                        
+                        setTimeout(() => {
+                            if (element.parentNode) {
+                                element.parentNode.removeChild(element);
+                            }
+                        }, 2000);
+                    }, i * 200);
+                }
+            }, 1000);
+        });
+    </script>
+</body>
+</html>
